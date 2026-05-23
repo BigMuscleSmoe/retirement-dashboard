@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, AfterViewChecked, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { ApiService, Account, BalanceHistory, AssetAllocation, ContributionSummary, Contribution, PageResponse } from '../../core/api.service';
 import { Chart, registerables } from 'chart.js';
@@ -45,11 +45,11 @@ Chart.register(...registerables);
 
         <!-- Charts -->
         <div class="charts-grid">
-          <div class="chart-card">
+          <div class="chart-card" *ngIf="balanceHistory.length > 0">
             <h3>Balance Over Time</h3>
             <canvas #balanceChart></canvas>
           </div>
-          <div class="chart-card allocation-chart">
+          <div class="chart-card allocation-chart" *ngIf="allocations.length > 0">
             <h3>Asset Allocation</h3>
             <canvas #allocationChart></canvas>
           </div>
@@ -200,7 +200,7 @@ Chart.register(...registerables);
     }
   `]
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, AfterViewChecked {
   @ViewChild('balanceChart') balanceChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('allocationChart') allocationChartRef!: ElementRef<HTMLCanvasElement>;
 
@@ -212,6 +212,8 @@ export class DashboardComponent implements OnInit {
   loading = true;
   today = new Date();
   contributionPct = 0;
+  private balanceChartRendered = false;
+  private allocationChartRendered = false;
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
@@ -238,7 +240,6 @@ export class DashboardComponent implements OnInit {
           );
         }
         this.cdr.detectChanges();
-        this.renderCharts();
       }
     };
 
@@ -248,69 +249,79 @@ export class DashboardComponent implements OnInit {
     this.api.getContributions(accountId, 0, 5).subscribe({ next: p => { this.recentContributions = p.content; done(); }, error: () => done() });
   }
 
-  private renderCharts(): void {
-    if (this.balanceHistory.length > 0 && this.balanceChartRef) {
-      new Chart(this.balanceChartRef.nativeElement, {
-        type: 'line',
-        data: {
-          labels: this.balanceHistory.map(h => h.recordDate),
-          datasets: [{
-            label: 'Balance',
-            data: this.balanceHistory.map(h => h.balance),
-            borderColor: '#0ea5e9',
-            backgroundColor: 'rgba(14, 165, 233, 0.1)',
-            fill: true,
-            tension: 0.4,
-            pointRadius: 3,
-            pointBackgroundColor: '#0ea5e9'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => '$' + Number(ctx.raw).toLocaleString()
-              }
-            }
-          },
-          scales: {
-            y: {
-              ticks: { callback: (v) => '$' + Number(v).toLocaleString() }
-            }
-          }
-        }
-      });
+  ngAfterViewChecked(): void {
+    if (!this.balanceChartRendered && this.balanceHistory.length > 0 && this.balanceChartRef) {
+      this.balanceChartRendered = true;
+      this.renderBalanceChart();
     }
-
-    if (this.allocations.length > 0 && this.allocationChartRef) {
-      const colors = ['#0ea5e9', '#8b5cf6', '#f59e0b', '#10b981', '#6b7280'];
-      const labels = this.allocations.map(a =>
-        a.assetClass.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-      );
-      new Chart(this.allocationChartRef.nativeElement, {
-        type: 'doughnut',
-        data: {
-          labels,
-          datasets: [{
-            data: this.allocations.map(a => a.percentage),
-            backgroundColor: colors.slice(0, this.allocations.length),
-            borderWidth: 0
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'bottom' },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => `${ctx.label}: ${ctx.raw}%`
-              }
-            }
-          }
-        }
-      });
+    if (!this.allocationChartRendered && this.allocations.length > 0 && this.allocationChartRef) {
+      this.allocationChartRendered = true;
+      this.renderAllocationChart();
     }
   }
+
+  private renderBalanceChart(): void {
+    new Chart(this.balanceChartRef.nativeElement, {
+      type: 'line',
+      data: {
+        labels: this.balanceHistory.map(h => h.recordDate),
+        datasets: [{
+          label: 'Balance',
+          data: this.balanceHistory.map(h => h.balance),
+          borderColor: '#0ea5e9',
+          backgroundColor: 'rgba(14, 165, 233, 0.1)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+          pointBackgroundColor: '#0ea5e9'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => '$' + Number(ctx.raw).toLocaleString()
+            }
+          }
+        },
+        scales: {
+          y: {
+            ticks: { callback: (v) => '$' + Number(v).toLocaleString() }
+          }
+        }
+      }
+    });
+  }
+
+  private renderAllocationChart(): void {
+    const colors = ['#0ea5e9', '#8b5cf6', '#f59e0b', '#10b981', '#6b7280'];
+    const labels = this.allocations.map(a =>
+      a.assetClass.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+    );
+    new Chart(this.allocationChartRef.nativeElement, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data: this.allocations.map(a => a.percentage),
+          backgroundColor: colors.slice(0, this.allocations.length),
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.label}: ${ctx.raw}%`
+            }
+          }
+        }
+      }
+    });
+  }
+
 }

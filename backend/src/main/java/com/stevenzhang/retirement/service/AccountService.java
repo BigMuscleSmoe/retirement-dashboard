@@ -8,6 +8,7 @@ import com.stevenzhang.retirement.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -54,6 +55,7 @@ public class AccountService {
                 accountId, PageRequest.of(page, size));
     }
 
+    @Transactional
     public Contribution createContribution(UUID accountId, String email, CreateContributionRequest request) {
         Account account = getAccountForUser(accountId, email);
         Contribution contribution = new Contribution();
@@ -62,7 +64,19 @@ public class AccountService {
         contribution.setEmployeeAmount(request.employeeAmount());
         contribution.setEmployerAmount(request.employerAmount());
         contribution.setPayPeriod(request.payPeriod());
-        return contributionRepository.save(contribution);
+        Contribution saved = contributionRepository.save(contribution);
+
+        BigDecimal total = request.employeeAmount().add(request.employerAmount());
+        account.setCurrentBalance(account.getCurrentBalance().add(total));
+        accountRepository.save(account);
+
+        BalanceHistory record = new BalanceHistory();
+        record.setAccount(account);
+        record.setRecordDate(request.contributionDate());
+        record.setBalance(account.getCurrentBalance());
+        balanceHistoryRepository.save(record);
+
+        return saved;
     }
 
     public ContributionSummary getContributionSummary(UUID accountId, String email) {
