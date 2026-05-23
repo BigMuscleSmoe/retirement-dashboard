@@ -25,7 +25,7 @@ jobs:
           java-version: 17
       - name: Build and test
         working-directory: backend
-        run: mvnw verify
+        run: mvn verify
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/test_db
           SPRING_DATASOURCE_USERNAME: test_user
