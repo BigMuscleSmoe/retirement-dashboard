@@ -40,7 +40,7 @@ Angular (SPA)  ──HTTP/REST──▶  Spring Boot API  ──JPA/JDBC──�
 
 ```bash
 # Clone the repository
-git clone https://github.com/stevenzhang/retirement-dashboard.git
+git clone https://github.com/BigMuscleSmoe/retirement-dashboard.git
 cd retirement-dashboard
 
 # Start all services (PostgreSQL, backend, frontend)
