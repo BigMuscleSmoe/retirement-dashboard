@@ -51,6 +51,10 @@ Angular (SPA)  ──HTTP/REST──▶  Spring Boot API  ──JPA/JDBC──�
 git clone https://github.com/BigMuscleSmoe/retirement-dashboard.git
 cd retirement-dashboard
 
+# Create your environment file and fill in the values —
+# the app will not start without them
+cp .env.example .env
+
 # Start all services (PostgreSQL, backend, frontend)
 docker compose up --build
 
@@ -60,7 +64,7 @@ docker compose up --build
 
 ### Demo Account
 
-After starting, log in with the seeded demo user:
+The demo user is seeded only when `SPRING_PROFILES_ACTIVE=demo` is set in `.env` (the default in `.env.example`). After starting, log in with:
 
 | Field    | Value              |
 |----------|--------------------|
