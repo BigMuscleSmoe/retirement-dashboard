@@ -2,6 +2,14 @@
 
 A full-stack web application for tracking 401(k) account balances, contribution history, and modeling retirement income projections. Built with Java/Spring Boot and Angular.
 
+**Live Demo:** _coming soon_ — log in with `demo@example.com` / `password123`
+
+![Dashboard](docs/screenshots/dashboard.webp)
+
+| Contribution History | Retirement Projections |
+|----------------------|------------------------|
+| ![Contribution history](docs/screenshots/contributions.webp) | ![Retirement projections](docs/screenshots/projections.webp) |
+
 ## Tech Stack
 
 | Layer      | Technology                                     |
