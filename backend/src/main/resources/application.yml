@@ -2,7 +2,7 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/retirement_db}
     username: ${SPRING_DATASOURCE_USERNAME:retirement_user}
-    password: ${SPRING_DATASOURCE_PASSWORD:changeme}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     hikari:
       maximum-pool-size: 10
   jpa:
@@ -17,7 +17,7 @@ spring:
     locations: classpath:db/migration
 
 jwt:
-  secret: ${JWT_SECRET:default-dev-secret-replace-in-production-must-be-at-least-256-bits-long!!}
+  secret: ${JWT_SECRET}
   expiration-ms: 3600000
   refresh-expiration-ms: 86400000
 
