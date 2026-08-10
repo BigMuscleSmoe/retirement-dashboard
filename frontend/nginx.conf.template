@@ -9,7 +9,12 @@ server {
     }
 
     location /api/ {
-        proxy_pass ${API_PROXY_URL};
+        # Runtime DNS resolution: Railway assigns new internal IPs per deploy,
+        # and startup-time resolution caches forever. NGINX_LOCAL_RESOLVERS is
+        # populated from /etc/resolv.conf by the image entrypoint.
+        resolver ${NGINX_LOCAL_RESOLVERS} ${NGINX_RESOLVER_FLAGS} valid=10s;
+        set $api_upstream ${API_PROXY_URL};
+        proxy_pass $api_upstream;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
