@@ -2,7 +2,7 @@
 
 A full-stack web application for tracking 401(k) account balances, contribution history, and modeling retirement income projections. Built with Java/Spring Boot and Angular.
 
-**Live Demo:** _coming soon_ — log in with `demo@example.com` / `password123`
+**Live Demo:** [retirement-web-production.up.railway.app](https://retirement-web-production.up.railway.app) — log in with `demo@example.com` / `password123`
 
 ![Dashboard](docs/screenshots/dashboard.webp)
 
